@@ -3,6 +3,7 @@ package com.smbms.controller;
 import com.github.pagehelper.PageInfo;
 import com.smbms.Exception.UserException;
 import com.smbms.pojo.Data;
+import com.smbms.pojo.Page;
 import com.smbms.pojo.User;
 import com.smbms.pojo.vo.UserVo;
 import com.smbms.service.UserService;
@@ -42,7 +43,7 @@ public class UserController {
         if(pageIndex==null){
             pageIndex=1;
         }
-        PageInfo<UserVo> userPageInfo  = userService.getUserList(pageIndex,5,queryUserName,queryUserRole);
+        Page userPageInfo  = userService.getUserList(pageIndex,5,queryUserName,queryUserRole);
         model.addAttribute("pageInfo",userPageInfo );
         return "userlist";
     }

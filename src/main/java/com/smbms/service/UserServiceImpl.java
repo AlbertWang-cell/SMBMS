@@ -6,6 +6,7 @@ import com.github.pagehelper.PageInfo;
 import com.smbms.Exception.UserException;
 import com.smbms.dao.RoleMapper;
 import com.smbms.dao.UserMapper;
+import com.smbms.pojo.Page;
 import com.smbms.pojo.Role;
 import com.smbms.pojo.User;
 import com.smbms.pojo.UserExample;
@@ -55,9 +56,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public PageInfo<UserVo> getUserList(int pageNum,int pageSize,String queryUserName, Long queryUserRole) throws Exception {
+    public Page getUserList(int pageNum,int pageSize,String queryUserName, Long queryUserRole) throws Exception {
         //设置页码和页面大小
-        PageHelper.startPage(pageNum,pageSize);
+//        PageHelper.startPage(pageNum,pageSize);
         UserExample example = new UserExample();
         UserExample.Criteria criteria = example.createCriteria();
         if(queryUserName != null && !"".equals(queryUserName)) {
@@ -69,9 +70,10 @@ public class UserServiceImpl implements UserService {
         List<User> list = userMapper.selectByExample(example);
             System.out.println(list.size());
             List<UserVo> userVoList = new ArrayList<>();
-            UserVo userVo;
+            Page page = new Page();
+            UserVo userVo = new UserVo();
             for(User user:list){
-                userVo = new UserVo();
+//                userVo = new UserVo();
                 BeanUtils.copyProperties(user,userVo);
                 userVo.setAge(new Date().getYear()-user.getBirthday().getYear());
                 Role role = roleMapper.selectByPrimaryKey(user.getUserRole());
@@ -80,8 +82,14 @@ public class UserServiceImpl implements UserService {
             }
 
         //把分页后的list封装到带有
-        PageInfo<UserVo> userPageInfo = new PageInfo<>(userVoList);
-        return userPageInfo;
+//        PageInfo<UserVo> userPageInfo = new PageInfo<>(userVoList);
+        Long totalCount=(long) userVoList.size();
+        page.setTotalCount(totalCount);
+        //总页数
+        Long totalPageCount=totalCount%pageSize==0?totalCount/pageSize:totalCount/pageSize+1;
+
+        page.setTotalPageCount(totalPageCount);
+        return page;
     }
 
 
@@ -92,11 +100,11 @@ public class UserServiceImpl implements UserService {
         criteria.andUserPasswordEqualTo(oldpassword);
         List<User> list = userMapper.selectByExample(example);
         User loginUser = (User)session.getAttribute("loginUser");
-        if(list.get(0)!=null&&!"".equals(list.get(0))){
+        if(list.get(0)!=null&&!"".equals(list.get(0).toString())){
             return "true";
-        }else if(list.get(0)==null||"".equals(list.get(0))){
+        }else if(list.get(0)==null||"".equals(list.get(0).toString())){
             return "false";
-        }else if(loginUser==null||"".equals(loginUser)){
+        }else if(loginUser==null||"".equals(loginUser.toString())){
             return "sessionerror";
         }else if(oldpassword==null||"".equals(oldpassword)){
             return "error";
@@ -116,7 +124,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String delUserById(Long id) throws Exception{
           User user = userMapper.selectByPrimaryKey(id);
-          if(user==null||("").equals(user)){
+          if(user==null||("").equals(user.toString())){
               return "notexist";
           }else {
               int a = userMapper.deleteByPrimaryKey(id);
